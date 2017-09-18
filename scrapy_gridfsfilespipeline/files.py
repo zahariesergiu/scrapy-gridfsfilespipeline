@@ -196,6 +196,15 @@ class GridFSFilesPipeline(FilesPipeline):
     def filename(self, request):
         """Return the original filename"""
 
+        # check if called from file_key with url as first argument
+        if not isinstance(request, Request):
+            self._warn()
+            url = request
+        else:
+            url = request.url
+        filename = url.split('/')[-1]
+        return filename
+
     ## start of deprecation warning block (can be removed in the future)
     def _url(self, request):
         if not isinstance(request, Request):
