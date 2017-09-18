@@ -3,6 +3,7 @@ import datetime
 import gridfs
 import pymongo
 
+from scrapy.pipelines.files import FilesPipeline
 from scrapy.utils.misc import md5sum
 
 
@@ -30,3 +31,20 @@ class GridFSFilesStorage(object):
         last_modified = (pdf.upload_date - epoch).total_seconds()
         checksum = md5sum(pdf)
         return {'last_modified': last_modified, 'checksum': checksum, 'mongo_objectid': pdf._id}
+
+
+class GridFSFilesPipeline(FilesPipeline):
+    """
+    An extension of FilesPipeline that store files in MongoDB GridFS.
+    Is using a guid to check if the file exists in GridFS and MongoDB ObjectId to reference the file with item.
+    FilesPipeline was using a single variable 'path' for reference and identification.
+    guid is used in MongoGridFSFilesPipeline because the pipeline needs a unique identifier generated based on file URL.
+    MongoGridFSFilesPipeline is using ObjectId to reference the file because it's the primary key.
+    """
+
+    @classmethod
+    def from_settings(cls, settings):
+        """Override to use store_uri = MONGO_URI"""
+
+        store_uri = settings['MONGO_URI']
+        return cls(store_uri, settings=settings)
