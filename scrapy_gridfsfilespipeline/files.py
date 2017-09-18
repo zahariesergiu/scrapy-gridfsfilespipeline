@@ -1,14 +1,19 @@
 import datetime
 import time
 
-import gridfs
-import pymongo
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
 
 from scrapy.pipelines.files import FilesPipeline, logger, FileException
 from scrapy.utils.log import failure_to_exc_info
 from scrapy.utils.misc import md5sum
 from scrapy.utils.request import referer_str
 from twisted.internet import defer
+
+import gridfs
+import pymongo
 
 
 class GridFSFilesStorage(object):
@@ -160,6 +165,13 @@ class GridFSFilesPipeline(FilesPipeline):
 
     def file_downloaded(self, response, request, info):
         """Override to return also the mongo object id along with checksum"""
+
+        guid = self.file_guid(request, response=response, info=info)
+        buf = BytesIO(response.body)
+        checksum = md5sum(buf)
+        buf.seek(0)
+        mongo_objectid = self.store.persist_file(guid, buf, info)
+        return checksum, mongo_objectid
 
     def file_guid(self, request, response=None, info=None):
         """Renamed and modify file_path to file_guid. In mongo DB the path to file is mongo id. In FilesPipeline path
