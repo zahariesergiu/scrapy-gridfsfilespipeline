@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import time
 
 try:
@@ -6,9 +7,11 @@ try:
 except ImportError:
     from io import BytesIO
 
+from scrapy.http import Request
 from scrapy.pipelines.files import FilesPipeline, logger, FileException
 from scrapy.utils.log import failure_to_exc_info
 from scrapy.utils.misc import md5sum
+from scrapy.utils.python import to_bytes
 from scrapy.utils.request import referer_str
 from twisted.internet import defer
 
@@ -177,5 +180,35 @@ class GridFSFilesPipeline(FilesPipeline):
         """Renamed and modify file_path to file_guid. In mongo DB the path to file is mongo id. In FilesPipeline path
         was used as identifier and localization"""
 
+        ## start of deprecation warning block (can be removed in the future)
+
+        # check if called from file_key with url as first argument
+        url = self._url(request)
+        # detect if file_key() method has been overridden
+        if not hasattr(self.file_key, '_base'):
+            self._warn()
+            return self.file_key(url)
+        ## end of deprecation warning block
+
+        media_guid = hashlib.sha1(to_bytes(url)).hexdigest()  # change to request.url after deprecation
+        return media_guid
+
     def filename(self, request):
         """Return the original filename"""
+
+    ## start of deprecation warning block (can be removed in the future)
+    def _url(self, request):
+        if not isinstance(request, Request):
+            self._warn()
+            url = request
+        else:
+            url = request.url
+        return url
+
+    def _warn(self):
+        from scrapy.exceptions import ScrapyDeprecationWarning
+        import warnings
+        warnings.warn('GridFSFilesPipeline.file_key(url) method is deprecated, please use '
+                      'file_guid(request, response=None, info=None) instead',
+                      category=ScrapyDeprecationWarning, stacklevel=1)
+    ## end of deprecation warning block
