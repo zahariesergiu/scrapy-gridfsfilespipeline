@@ -1,6 +1,13 @@
 import six
 
-from scrapy.pipelines.images import ImagesPipeline
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
+
+from PIL import Image
+
+from scrapy.pipelines.images import ImagesPipeline, ImageException
 from scrapy.utils.misc import md5sum
 
 from .files import GridFSFilesPipeline
@@ -45,3 +52,22 @@ class GridFSImagesPipeline(ImagesPipeline, GridFSFilesPipeline):
         images_ids = {"image": mongo_object_id}
         images_ids.update(thumbs)
         return checksum, images_ids
+
+    def get_images(self, response, request, info):
+        """Override to return thumb_guid instead of thumb_path"""
+
+        image_guid = self.file_guid(request, response=response, info=info)
+        orig_image = Image.open(BytesIO(response.body))
+
+        width, height = orig_image.size
+        if width < self.min_width or height < self.min_height:
+            raise ImageException("Image too small (%dx%d < %dx%d)" %
+                                 (width, height, self.min_width, self.min_height))
+
+        image, buf = self.convert_image(orig_image)
+        yield image_guid, image, buf
+
+        for thumb_id, size in six.iteritems(self.thumbs):
+            thumb_guid = self.file_guid(request, response=response, info=info)
+            thumb_image, thumb_buf = self.convert_image(image, size)
+            yield thumb_guid, thumb_image, thumb_buf
