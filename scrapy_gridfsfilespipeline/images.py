@@ -11,3 +11,8 @@ class GridFSImagesPipeline(ImagesPipeline, GridFSFilesPipeline):
     guid is used in MongoGridFSFilesPipeline because the pipeline needs a unique identifier generated based on file URL.
     MongoGridFSFilesPipeline is using ObjectId to reference the file because it's the primary key.
     """
+
+    @classmethod
+    def from_settings(cls, settings):
+        store_uri = settings['MONGO_URI']
+        return cls(store_uri, settings=settings)
