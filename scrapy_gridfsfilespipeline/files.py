@@ -48,3 +48,22 @@ class GridFSFilesPipeline(FilesPipeline):
 
         store_uri = settings['MONGO_URI']
         return cls(store_uri, settings=settings)
+
+    def _get_store(self, uri):
+        """Override to use MongoGridFSFilesStorage as singele storage option"""
+
+    def media_to_download(self, request, info):
+        """Override to include in the returned result mongo object id and file_guid instead of file_path and filename"""
+
+    def media_downloaded(self, response, request, info):
+        """Override to include in the returned result mongo object id and file_guid instead of file_path and filename"""
+
+    def file_downloaded(self, response, request, info):
+        """Override to return also the mongo object id along with checksum"""
+
+    def file_guid(self, request, response=None, info=None):
+        """Renamed and modify file_path to file_guid. In mongo DB the path to file is mongo id. In FilesPipeline path
+        was used as identifier and localization"""
+
+    def filename(self, request):
+        """Return the original filename"""
