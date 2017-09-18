@@ -51,6 +51,8 @@ class GridFSFilesPipeline(FilesPipeline):
 
     def _get_store(self, uri):
         """Override to use MongoGridFSFilesStorage as singele storage option"""
+        store_cls = GridFSFilesStorage
+        return store_cls(uri)
 
     def media_to_download(self, request, info):
         """Override to include in the returned result mongo object id and file_guid instead of file_path and filename"""
