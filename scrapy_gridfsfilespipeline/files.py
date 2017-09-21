@@ -221,3 +221,9 @@ class GridFSFilesPipeline(FilesPipeline):
                       'file_guid(request, response=None, info=None) instead',
                       category=ScrapyDeprecationWarning, stacklevel=1)
     ## end of deprecation warning block
+
+    # deprecated
+    def file_key(self, url):
+        """Override to use file_guid instead of file_path"""
+        return self.file_guid(url)
+    file_key._base = True
