@@ -50,7 +50,7 @@ class GridFSImagesPipeline(ImagesPipeline, GridFSFilesPipeline):
             filename = self.filename(request)
             name, ext = filename.split('.')
             thumb_id, size = thumbs_id_iter.next()
-            filename = name + '_' + thumb_id + '.' + ext
+            filename = name + '_thumb_' + thumb_id + '.' + ext
             file_data = {'scrapy_guid': thumb_guid, "filename": filename}
             thumb_mongo_object_id = self.store.persist_file(thumb_buf, info, file_data=file_data,
                         meta={'width': width, 'height': height}, headers={'Content-Type': 'image/jpeg'})
