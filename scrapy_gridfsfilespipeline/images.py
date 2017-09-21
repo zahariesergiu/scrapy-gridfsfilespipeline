@@ -55,9 +55,12 @@ class GridFSImagesPipeline(ImagesPipeline, GridFSFilesPipeline):
             thumb_mongo_object_id = self.store.persist_file(thumb_buf, info, file_data=file_data,
                         meta={'width': width, 'height': height}, headers={'Content-Type': 'image/jpeg'})
             thumbs[thumb_id] = thumb_mongo_object_id
-        images_mongoobjectids = {"image": mongo_object_id}
-        images_mongoobjectids.update(thumbs)
-        return checksum, images_mongoobjectids
+        if thumbs:
+            images_mongoobjectids = {"image": mongo_object_id}
+            images_mongoobjectids.update(thumbs)
+            return checksum, images_mongoobjectids
+        else:
+            return checksum, mongo_object_id
 
     def get_images(self, response, request, info):
         """Override to return thumb_guid instead of thumb_path"""
