@@ -35,6 +35,7 @@ class GridFSImagesPipeline(ImagesPipeline, GridFSFilesPipeline):
         image_guid, image, buf = image_iter.next()
         filename = self.filename(request)
         file_data = {'scrapy_guid': image_guid, "filename": filename}
+        buf.seek(0)
         checksum = md5sum(buf)
         buf.seek(0)
 
