@@ -2,39 +2,50 @@
 scrapy-gridfsfilespipeline
 ==========================
 
+
 scrapy-gridfsfilespipeline is an extension of files and images pipelines to store data in MongoDB GridFS.
+
+
 
 Installation
 ============
+
 
 Install scrapy-gridfsfilespipeline using ``pip``::
 
 
     $ pip install git+https://github.com/zahariesergiu/scrapy-gridfsfilespipeline
+
 Configuration
 =============
 
+
 Include the pipeline(s) in ``ITEM_PIPELINES`` dict in ``settings.py``::
+
     ITEM_PIPELINES = {
         'scrapy_gridfsfilespipeline.files.GridFSFilesPipeline': 1,
         'scrapy_gridfsfilespipeline.images.GridFSImagesPipeline': 2,
     }
+
 Set the ``MONGO_URI``, i.e.::
 
     MONGO_URI = "mongodb://localhost:27017/dbname"
 
-Where dbname is your mogo database name.
-Done!
-In case of using GridFSImagesPipeline, ``IMAGES_THUMBS`` setting is also available for generating thumbs i.e.::
+Where ``dbname`` is your mongo database name.
+
+
+In case of using ``GridFSImagesPipeline``, ``IMAGES_THUMBS`` setting is also available for generating thumbs i.e.::
 
     IMAGES_THUMBS = {
         'small': (50, 50),
         'big': (100, 100),
     }
-Output Examples
-=============
 
-Item result using GridFSImagesPipeline::
+Output Examples
+===============
+
+
+Scrapy item result using ``GridFSImagesPipeline``::
 
     {
         'description': u'An open source and collaborative framework for extracting the data you need from websites.\n      ',
@@ -45,7 +56,8 @@ Item result using GridFSImagesPipeline::
                  'mongo_objectid': ObjectId('59c3aaf2d297fb4d98f89b46'),
                  'url': 'https://scrapy.org/img/scrapylogo.png'}]
     }
-Item result using GridFSImagesPipeline with IMAGES_THUMBS set::
+
+Scrapy item result using ``GridFSImagesPipeline`` with ``IMAGES_THUMBS`` set::
 
     {
         'description': u'An open source and collaborative framework for extracting the data you need from websites.',
@@ -59,7 +71,7 @@ Item result using GridFSImagesPipeline with IMAGES_THUMBS set::
                  'url': 'https://scrapy.org/img/scrapylogo.png'}]
      }
 
-MongoDB GridFS documents result::
+MongoDB GridFS documents result using ``GridFSImagesPipeline`` with ``IMAGES_THUMBS`` set::
 
     {
         "_id" : ObjectId("59c3a868d297fb4baab48d6e"),
