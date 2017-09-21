@@ -29,10 +29,10 @@ class GridFSFilesStorage(object):
         self.db = client.myscrapy
         self.fs = gridfs.GridFS(self.db)
 
-    def persist_file(self, file_guid, buf, info, meta=None, headers=None):
+    def persist_file(self, buf, info, file_data={}, meta=None, headers=None):
         """Save the file to GridFS and return it's ObjectId"""
 
-        grid_id = self.fs.put(buf, scrapy_guid=file_guid)
+        grid_id = self.fs.put(buf, **file_data)
         return grid_id
 
     def stat_file(self, file_guid, info):
@@ -169,11 +169,13 @@ class GridFSFilesPipeline(FilesPipeline):
     def file_downloaded(self, response, request, info):
         """Override to return also the mongo object id along with checksum"""
 
+        filename = self.filename(request)
         guid = self.file_guid(request, response=response, info=info)
+        file_data = {'filename': filename, 'scrapy_guid': guid}
         buf = BytesIO(response.body)
         checksum = md5sum(buf)
         buf.seek(0)
-        mongo_objectid = self.store.persist_file(guid, buf, info)
+        mongo_objectid = self.store.persist_file(buf, info, file_data=file_data)
         return checksum, mongo_objectid
 
     def file_guid(self, request, response=None, info=None):

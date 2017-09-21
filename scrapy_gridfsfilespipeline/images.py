@@ -33,10 +33,12 @@ class GridFSImagesPipeline(ImagesPipeline, GridFSFilesPipeline):
         # First image is the original image
         image_iter = self.get_images(response, request, info)
         image_guid, image, buf = image_iter.next()
+        filename = self.filename(request)
+        file_data = {'scrapy_guid': image_guid, "filename": filename}
         checksum = md5sum(buf)
         buf.seek(0)
 
-        mongo_object_id = self.store.persist_file(image_guid, buf, info,
+        mongo_object_id = self.store.persist_file(buf, info, file_data=file_data,
                         meta={'width': image.size[0], 'height': image.size[1]}, headers={'Content-Type': 'image/jpeg'})
 
         # Next images are thumbs
@@ -45,13 +47,17 @@ class GridFSImagesPipeline(ImagesPipeline, GridFSFilesPipeline):
         for thumb_guid, thumb, thumb_buf in image_iter:
             width, height = thumb.size
             thumb_buf.seek(0)
-            thumb_mongo_object_id = self.store.persist_file(thumb_guid, thumb_buf, info,
-                        meta={'width': width, 'height': height}, headers={'Content-Type': 'image/jpeg'})
+            filename = self.filename(request)
+            name, ext = filename.split('.')
             thumb_id, size = thumbs_id_iter.next()
+            filename = name + '_' + thumb_id + '.' + ext
+            file_data = {'scrapy_guid': thumb_guid, "filename": filename}
+            thumb_mongo_object_id = self.store.persist_file(thumb_buf, info, file_data=file_data,
+                        meta={'width': width, 'height': height}, headers={'Content-Type': 'image/jpeg'})
             thumbs[thumb_id] = thumb_mongo_object_id
-        images_ids = {"image": mongo_object_id}
-        images_ids.update(thumbs)
-        return checksum, images_ids
+        images_mongoobjectids = {"image": mongo_object_id}
+        images_mongoobjectids.update(thumbs)
+        return checksum, images_mongoobjectids
 
     def get_images(self, response, request, info):
         """Override to return thumb_guid instead of thumb_path"""
