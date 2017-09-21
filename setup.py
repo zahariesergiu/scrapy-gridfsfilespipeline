@@ -10,7 +10,7 @@ setup(
     author_email='zahariesergiu@gmail.com',
     license='BSD',
     platforms=['Any'],
-    py_modules=['scrapy_gridfsfilespipeline'],
+    packages=['scrapy_gridfsfilespipeline'],
     install_requires=[
             'Scrapy',
             'pymongo',
