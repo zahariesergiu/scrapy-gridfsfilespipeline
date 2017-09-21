@@ -26,7 +26,7 @@ class GridFSFilesStorage(object):
 
     def __init__(self, uri):
         client = pymongo.MongoClient(uri)
-        self.db = client.myscrapy
+        self.db = client.get_database()
         self.fs = gridfs.GridFS(self.db)
 
     def persist_file(self, buf, info, file_data={}, meta=None, headers=None):
